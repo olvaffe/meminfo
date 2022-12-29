@@ -184,18 +184,22 @@ meminfo_dump(const struct meminfo *info)
 
     printf("--\n");
 
-    /* used/total memory and swap */
-    printf("Mem %d/%dM Swap %d/%dM\n", sys[MEMINFO_SYS_MemTotal] - sys[MEMINFO_SYS_MemFree],
+    /* used/total pages in buddy and in swap */
+    printf("Buddy %d/%dM Swap %d/%dM\n", sys[MEMINFO_SYS_MemTotal] - sys[MEMINFO_SYS_MemFree],
            sys[MEMINFO_SYS_MemTotal], sys[MEMINFO_SYS_SwapTotal] - sys[MEMINFO_SYS_SwapFree],
            sys[MEMINFO_SYS_SwapTotal]);
 
-    /* major memory users */
-    printf("LRU Anon/File/Unevictable %d/%d/%d Slab %d+%dM UserPageTables %dM Stack %dM\n",
-           sys[MEMINFO_SYS_ActiveAnon] + sys[MEMINFO_SYS_InactiveAnon],
+    /* major consumers */
+    printf("Cached/Buffers/SwapCached %d/%d/%dM AnonPages %dM Slab %d+%dM PageTables %dM "
+           "KernelStack %dM\n",
+           sys[MEMINFO_SYS_Cached], sys[MEMINFO_SYS_Buffers], sys[MEMINFO_SYS_SwapCached],
+           sys[MEMINFO_SYS_AnonPages], sys[MEMINFO_SYS_SReclaimable], sys[MEMINFO_SYS_SUnreclaim],
+           sys[MEMINFO_SYS_PageTables], sys[MEMINFO_SYS_KernelStack]);
+
+    printf("LRU File/Anon/Unevictable %d/%d/%d Shmem %dM\n",
            sys[MEMINFO_SYS_ActiveFile] + sys[MEMINFO_SYS_InactiveFile],
-           sys[MEMINFO_SYS_Unevictable], sys[MEMINFO_SYS_SReclaimable],
-           sys[MEMINFO_SYS_SUnreclaim], sys[MEMINFO_SYS_PageTables],
-           sys[MEMINFO_SYS_KernelStack]);
+           sys[MEMINFO_SYS_ActiveAnon] + sys[MEMINFO_SYS_InactiveAnon],
+           sys[MEMINFO_SYS_Unevictable], sys[MEMINFO_SYS_Shmem]);
 
     /* malloc is similar to mmap(MAP_PRIVATE | MAP_ANONYMOUS).  It is not
      * backed by any file.
@@ -203,10 +207,6 @@ meminfo_dump(const struct meminfo *info)
      * shmem is similar to mmap(MAP_SHARED | MAP_ANONYMOUS).  It is backed by
      * a in-memory file.
      */
-    printf("Shmem %dM LRU Files/Buffers/Swap %d/%d/%dM UserMappings Anon/File %d/%dM\n",
-           sys[MEMINFO_SYS_Shmem], sys[MEMINFO_SYS_Cached], sys[MEMINFO_SYS_Buffers],
-           sys[MEMINFO_SYS_SwapCached], sys[MEMINFO_SYS_AnonPages], sys[MEMINFO_SYS_Mapped]);
-
     printf("Allocated %dG+%dM, anon %dG, shmem %dG\n", gb, mb, anon, shmem);
 }
 
