@@ -177,29 +177,42 @@ meminfo_dump(const struct meminfo *info)
     int sys[MEMINFO_SYS_COUNT];
     meminfo_parse_sys(sys);
 
-    const int gb = (info->gb.entry_size >> 30) * info->gb.entry_count;
-    const int mb = (info->mb.entry_size >> 20) * info->mb.entry_count;
-    const int anon = (info->anon.entry_size >> 30) * info->anon.entry_count;
-    const int shmem = (info->shmem.entry_size >> 30) * info->shmem.entry_count;
+    const int MemTotal = sys[MEMINFO_SYS_MemTotal];
+    const int MemFree = sys[MEMINFO_SYS_MemFree];
+    const int Buffers = sys[MEMINFO_SYS_Buffers];
+    const int Cached = sys[MEMINFO_SYS_Cached];
+    const int SwapCached = sys[MEMINFO_SYS_SwapCached];
+    const int ActiveAnon = sys[MEMINFO_SYS_ActiveAnon];
+    const int InactiveAnon = sys[MEMINFO_SYS_InactiveAnon];
+    const int ActiveFile = sys[MEMINFO_SYS_ActiveFile];
+    const int InactiveFile = sys[MEMINFO_SYS_InactiveFile];
+    const int Unevictable = sys[MEMINFO_SYS_Unevictable];
+    const int SwapTotal = sys[MEMINFO_SYS_SwapTotal];
+    const int SwapFree = sys[MEMINFO_SYS_SwapFree];
+    const int AnonPages = sys[MEMINFO_SYS_AnonPages];
+    const int Shmem = sys[MEMINFO_SYS_Shmem];
+    const int SReclaimable = sys[MEMINFO_SYS_SReclaimable];
+    const int SUnreclaim = sys[MEMINFO_SYS_SUnreclaim];
+    const int KernelStack = sys[MEMINFO_SYS_KernelStack];
+    const int PageTables = sys[MEMINFO_SYS_PageTables];
 
     printf("--\n");
 
     /* used/total pages in buddy and in swap */
-    printf("Buddy %d/%dM Swap %d/%dM\n", sys[MEMINFO_SYS_MemTotal] - sys[MEMINFO_SYS_MemFree],
-           sys[MEMINFO_SYS_MemTotal], sys[MEMINFO_SYS_SwapTotal] - sys[MEMINFO_SYS_SwapFree],
-           sys[MEMINFO_SYS_SwapTotal]);
+    const int mem_used = MemTotal - MemFree;
+    const int swap_used = SwapTotal - SwapFree;
+    printf("Buddy %d/%dM Swap %d/%dM\n", mem_used, MemTotal, swap_used, SwapTotal);
 
-    /* major consumers */
+    /* all consumers */
+    const int other = mem_used - (Cached + Buffers + SwapCached + AnonPages + SReclaimable +
+                                  SUnreclaim + PageTables + KernelStack);
     printf("Cached/Buffers/SwapCached %d/%d/%dM AnonPages %dM Slab %d+%dM PageTables %dM "
-           "KernelStack %dM\n",
-           sys[MEMINFO_SYS_Cached], sys[MEMINFO_SYS_Buffers], sys[MEMINFO_SYS_SwapCached],
-           sys[MEMINFO_SYS_AnonPages], sys[MEMINFO_SYS_SReclaimable], sys[MEMINFO_SYS_SUnreclaim],
-           sys[MEMINFO_SYS_PageTables], sys[MEMINFO_SYS_KernelStack]);
+           "KernelStack %dM Other %dM\n",
+           Cached, Buffers, SwapCached, AnonPages, SReclaimable, SUnreclaim, PageTables,
+           KernelStack, other);
 
-    printf("LRU File/Anon/Unevictable %d/%d/%d Shmem %dM\n",
-           sys[MEMINFO_SYS_ActiveFile] + sys[MEMINFO_SYS_InactiveFile],
-           sys[MEMINFO_SYS_ActiveAnon] + sys[MEMINFO_SYS_InactiveAnon],
-           sys[MEMINFO_SYS_Unevictable], sys[MEMINFO_SYS_Shmem]);
+    printf("LRU File/Anon/Unevictable %d/%d/%d Shmem %dM\n", ActiveFile + InactiveFile,
+           ActiveAnon + InactiveAnon, Unevictable, Shmem);
 
     /* malloc is similar to mmap(MAP_PRIVATE | MAP_ANONYMOUS).  It is not
      * backed by any file.
@@ -207,6 +220,10 @@ meminfo_dump(const struct meminfo *info)
      * shmem is similar to mmap(MAP_SHARED | MAP_ANONYMOUS).  It is backed by
      * a in-memory file.
      */
+    const int gb = (info->gb.entry_size >> 30) * info->gb.entry_count;
+    const int mb = (info->mb.entry_size >> 20) * info->mb.entry_count;
+    const int anon = (info->anon.entry_size >> 30) * info->anon.entry_count;
+    const int shmem = (info->shmem.entry_size >> 30) * info->shmem.entry_count;
     printf("Allocated %dG+%dM, anon %dG, shmem %dG\n", gb, mb, anon, shmem);
 }
 
