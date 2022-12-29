@@ -163,8 +163,12 @@ meminfo_parse_sys(int *sys)
 
     fclose(fp);
 
-    for (int i = 0; i < MEMINFO_SYS_COUNT; i++)
-        sys[i] = sys[i] >= 1024 ? sys[i] / 1024 : 1;
+    for (int i = 0; i < MEMINFO_SYS_COUNT; i++) {
+        int mb = (sys[i] + 512) / 1024;
+        if (!mb && sys[i])
+            mb = 1;
+        sys[i] = mb;
+    }
 }
 
 static void
@@ -199,11 +203,11 @@ meminfo_dump(const struct meminfo *info)
      * shmem is similar to mmap(MAP_SHARED | MAP_ANONYMOUS).  It is backed by
      * a in-memory file.
      */
-    printf("Shmem %dM LRU Files/Buffers/Swap %d/%d/%d UserMappings Anon/File %d/%d\n",
+    printf("Shmem %dM LRU Files/Buffers/Swap %d/%d/%dM UserMappings Anon/File %d/%dM\n",
            sys[MEMINFO_SYS_Shmem], sys[MEMINFO_SYS_Cached], sys[MEMINFO_SYS_Buffers],
            sys[MEMINFO_SYS_SwapCached], sys[MEMINFO_SYS_AnonPages], sys[MEMINFO_SYS_Mapped]);
 
-    printf("Allocated %dG, %dM, anon %dG, shmem %dG\n", gb, mb, anon, shmem);
+    printf("Allocated %dG+%dM, anon %dG, shmem %dG\n", gb, mb, anon, shmem);
 }
 
 static void

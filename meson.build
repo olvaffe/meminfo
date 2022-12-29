@@ -20,25 +20,7 @@ warning_args = cc.get_supported_arguments([
 
 add_project_arguments(['-D_GNU_SOURCE', warning_args], language: 'c')
 
-dep_curses = dependency('curses')
-
-tests = [
-  'clear',
-  'formats',
-  'tri',
-  'tex',
-  'tex_depth',
-  'ubo',
-  'msaa',
-  'gs',
-  'tess',
-  'push_const',
-  'compute',
-  'ycbcr',
-]
-
 executable(
   'meminfo',
   sources: ['meminfo.c'],
-  dependencies: [dep_curses],
 )
